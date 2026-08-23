@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Paperclip, Mic, Send, Sparkles } from "lucide-react";
+import { Paperclip, Send, Sparkles, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 
 export default function App() {
   const [file, setFile] = useState(null);
@@ -36,19 +36,25 @@ export default function App() {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/analyze-clause/", {
+      // NOTE: Ensure this matches your GCP Public IP in production!
+      const response = await fetch(import.meta.env.VITE_API_URL, {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Failed to process the document. Check backend logs.");
+        throw new Error(`Server Error (${response.status}): Failed to process the document.`);
       }
 
       const data = await response.json();
       setResults(data);
     } catch (err) {
-      setError(err.message);
+      // Catch "Failed to fetch" specifically to give better instructions
+      if (err.message.includes("Failed to fetch")) {
+        setError("Connection failed: Unable to reach the backend server. The firewall might be blocking it or the server is offline.");
+      } else {
+        setError(`Analysis failed: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -104,11 +110,6 @@ export default function App() {
                 <Paperclip className="w-4 h-4" />
                 {file ? file.name : "Attach"}
               </button>
-
-              {/* <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-full text-sm font-medium text-gray-200">
-                <Mic className="w-4 h-4" />
-                Voice
-              </button> */}
             </div>
 
             <button 
@@ -117,7 +118,10 @@ export default function App() {
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition-colors px-6 py-2 rounded-full text-sm font-medium text-white shadow-lg disabled:opacity-50"
             >
               {loading ? (
-                <span className="animate-pulse">Scanning...</span>
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Scanning...
+                </>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
@@ -128,15 +132,44 @@ export default function App() {
           </div>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mt-6 w-full p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-center">
-            {error}
+        {/* 1. NEW DEDICATED ERROR STATE */}
+        {error && !loading && (
+          <div className="mt-8 w-full p-6 bg-red-900/20 border border-red-500/30 rounded-2xl flex flex-col items-center justify-center text-center space-y-4 shadow-lg backdrop-blur-md">
+            <AlertCircle className="w-10 h-10 text-red-400" />
+            <p className="text-red-200 text-sm font-medium">{error}</p>
+            <button 
+              onClick={handleAttachClick}
+              className="mt-2 flex items-center gap-2 bg-red-500/20 hover:bg-red-500/40 transition-colors px-5 py-2.5 rounded-full text-sm font-semibold text-red-200"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Re-upload PDF & Try Again
+            </button>
           </div>
         )}
 
-        {/* Results Area (Dark Theme) */}
-        {results && (
+        {/* 2. NEW DEDICATED LOADING ANIMATION */}
+        {loading && (
+          <div className="mt-8 w-full bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-2xl flex flex-col items-center justify-center space-y-6 shadow-xl">
+            <div className="relative flex items-center justify-center">
+              {/* Outer pulsing ring */}
+              <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-blue-500/30 animate-ping"></div>
+              {/* Inner spinning icon */}
+              <Loader2 className="w-12 h-12 text-blue-400 animate-spin relative z-10" />
+            </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-medium text-gray-200 animate-pulse">Analyzing Contract...</h3>
+              <p className="text-sm text-gray-400">Extracting text and identifying legal liabilities via Gemini AI.</p>
+            </div>
+            
+            {/* Visual Progress Bar */}
+            <div className="w-64 h-1.5 bg-gray-800 rounded-full overflow-hidden mt-4 relative">
+              <div className="absolute top-0 left-0 h-full bg-blue-500 rounded-full animate-[pulse_1.5s_ease-in-out_infinite]" style={{ width: '75%' }}></div>
+            </div>
+          </div>
+        )}
+
+        {/* 3. Results Area */}
+        {results && !loading && !error && (
           <div className="mt-8 w-full space-y-4">
             <h3 className="text-xl font-medium text-gray-200 ml-2">Contract Analysis</h3>
             {results.clauses.map((clause, index) => (
