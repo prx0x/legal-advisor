@@ -1,4 +1,4 @@
-# ⚖️ Legal Advisor (AI Contract Risk Heatmap)
+# ⚖️ Legal Advisor (AI Contract Risk Flag)
 
 An AI-powered, bilingual full-stack application designed to analyze legal contracts and instantly highlight risk factors. By leveraging OCR and Large Language Models, this tool extracts legal clauses (in English and Hindi) and returns a tag Red/Yellow/Green to empower civic and legal decision-making.
 
@@ -9,7 +9,7 @@ An AI-powered, bilingual full-stack application designed to analyze legal contra
 ## 🛠️ Tech Stack
 *   **Frontend:** React, Vite, Tailwind CSS
 *   **Backend:** FastAPI, Python, Uvicorn
-*   **AI & Data Extraction:** Google Gemini API, PyMuPDF, Tesseract OCR
+*   **AI & Data Extraction:** Google Gemini API, PyMuPDF, Tesseract OCR - Hindi and English Supported
 
 ## Live Deployment
-*   URL - http://35.202.135.95/
+*   **URL** - http://35.202.135.95/
