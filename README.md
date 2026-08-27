@@ -10,6 +10,3 @@ An AI-powered, bilingual full-stack application designed to analyze legal contra
 *   **Frontend:** React, Vite, Tailwind CSS
 *   **Backend:** FastAPI, Python, Uvicorn
 *   **AI & Data Extraction:** Google Gemini API, PyMuPDF, Tesseract OCR - Hindi and English Supported
-
-## Live Deployment
-*   **URL** - http://35.202.135.95/
